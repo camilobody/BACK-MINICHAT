@@ -168,7 +168,7 @@ io.on("connection", (socket) => {
 // receiveMsg();
 
 connetRabbit();
-// Guardar en datos mysql
+// Guardar datos en mysql
 receiveMsg();
 
 function ioEmmit({ key, data, to }) {
