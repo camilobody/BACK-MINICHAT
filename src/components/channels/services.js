@@ -37,7 +37,7 @@ service.channel = async (body) => {
                     id_user,
                   });
                 });
-            } else {
+            } else if (result[0].id_user != "bot") {
               usersService
                 .getUsers({ id_user: result[0].id_user, status: "active" })
                 .then((user) => {
@@ -72,6 +72,8 @@ service.channel = async (body) => {
                 .catch((err) => {
                   reject(err);
                 });
+            } else {
+              resolve(result[0]);
             }
           } else {
             membersService
@@ -81,10 +83,14 @@ service.channel = async (body) => {
                   id_channel: id_channel,
                   id_member: member[0].id,
                   id_service_line: body.id_service_line,
-                  id_user: id_user + "",
+                  id_user: id_user !== 'bot' ? id_user + "" : 11111111,
                   brand: member[0].brand ?? 1
                 };
                 if (id_user) {
+                  if (id_user === 'bot') {
+                    usersService
+                      .addUserBot()
+                  }
                   service
                     .createChannel(channel)
                     .then((result) => {
@@ -103,7 +109,6 @@ service.channel = async (body) => {
                           users.data.length - 1
                         );
                         channel.id_user = users.data[randomUser].id_user;
-
                         service
                           .createChannel(channel)
                           .then((result) => {
@@ -119,9 +124,24 @@ service.channel = async (body) => {
                             reject(err);
                           });
                       } else {
-                        reject({
-                          message: "No hay usuarios disponibles.",
-                        });
+                        // bot
+                        channel.id_user = "bot";
+                        usersService
+                          .addUserBot()
+                        service
+                          .createChannel(channel)
+                          .then((result) => {
+                            resolve(result);
+                            service.addReasignHistory({
+                              id_channel: result["id_channel"],
+                              last_id_user: "",
+                              new_id_user: channel.id_user,
+                              type: "first reasign",
+                            });
+                          })
+                          .catch((err) => {
+                            reject(err);
+                          });
                       }
                     })
                     .catch((err) => {

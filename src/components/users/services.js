@@ -137,6 +137,54 @@ service.countUsers = async (filter) => {
   });
 };
 
+service.addUserBot = async () => {
+  const conn = await getRethinkDB();
+
+  return new Promise((resolve, reject) => {
+    r.table("users")
+      .filter({ id_user: 11111111 })
+      .run(conn, (err, cursor) => {
+        if (err) reject(err);
+        cursor.toArray((err, result) => {
+          if (err) reject(err);
+          if (result.length === 0) {
+            let dataUser = {
+                id_user: 11111111, // Cambiar el id_user si es necesario puede ser cualquiera
+                first_name: 'Bot',
+                last_name: 'Bot',
+                role_id: 11111111, // Cambiar el role_id si es necesario puede ser cualquiera
+                status: "inactive",
+            };
+
+            r.table("users")
+                .insert(dataUser)
+                .run(conn, (err, result) => {
+                if (err) reject(err);
+                dataUser.id_rethink = result.generated_keys[0];
+
+                const dataToken = {
+                    device: null,
+                    type: 'bot',
+                    id_user: dataUser.id_user ?? null,
+                    id_member: null,
+                    token: 11111111,
+                };
+                sendMessageRabbit({
+                    msg: { ...dataUser, ...dataToken },
+                    flag: "insert_user",
+                });
+                resolve({
+                    message: "User added successfully",
+                    status: "success",
+                });
+                //   notificationServices.addTokens(dataToken);
+            });
+          }
+        });
+      });
+  });
+};
+
 service.addUsersSql = (member) =>{
   const connMySql = getConnectionMySql();
   const query = () => {
