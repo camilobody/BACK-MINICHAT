@@ -25,11 +25,24 @@ import migration from "./src/components/migration/main.js";
 import { connetRabbit } from "./src/config/rabbitConnect.js";
 import { formatLocalDate } from "./src/utils/fomat_local_date.js";
 
+import api from './src/api/routes/index.routes.js';
+
+
+// ***************** Part Express ******************************
+
 const app = express(); // initial express
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
+
+// ***************** End Part Express **************************
+
+
+
+
+
+// ***************** Part Socket *******************************
 
 const server = http.createServer(app);
 
@@ -39,11 +52,29 @@ const io = new Server(server, {
   },
 });
 
+// ***************** End Part Socket **************************
+
+
+
+
+
+
+// ***************** Part Express *****************************
+
 // middleware to control any error when join to the server
 app.use((err, _req, res, next) => {
   if (err) res.json({ error: err, status: 500 });
   next("router");
 });
+
+// ***************** End Part Express *************************
+
+
+
+
+
+
+// ***************** Part Routes ******************************
 
 // principal roiter to know if the server is ok
 app.get("/", (_, res) => {
@@ -58,6 +89,18 @@ app.use("/users", users);
 app.use("/meetings", meetings);
 app.use("/migration", migration);
 app.use("/notification", notification);
+
+app.use("/", api);
+
+
+// ***************** End Part Routes *************************
+
+
+
+
+
+
+// ***************** Part Socket *****************************
 
 // socket middleware
 io.use((socket, next) => {
@@ -165,11 +208,36 @@ io.on("connection", (socket) => {
   // });
 });
 
-// receiveMsg();
+// ***************** End Part Socket *************************
+
+
+
+
+
+
+// ***************** Part Rabbit *****************************
 
 connetRabbit();
+
+// ***************** End Part Rabbit *************************
+
+
+
+
+
+// ***************** Part Rabbit Service *********************
+
 // Guardar datos en mysql
 receiveMsg();
+
+// ***************** End Part Rabbit Service *****************
+
+
+
+
+
+
+// ***************** Part Socket *****************************
 
 function ioEmmit({ key, data, to }) {
   if (to) {
@@ -179,8 +247,18 @@ function ioEmmit({ key, data, to }) {
   }
 }
 
+// ***************** End Part Socket ************************
+
+
+
+
+
+// ***************** Part Express ***************************
+
 server.listen(process.env.PORT, () => {
   console.log("server is running on port " + process.env.PORT);
 });
+
+// ***************** End Part Express ***********************
 
 export default ioEmmit;

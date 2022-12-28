@@ -27,6 +27,7 @@
     "nodemon": "^2.0.16",
     "rethinkdb": "^2.4.2",
     "socket.io": "^4.5.1",
+    "thinky": "^2.3.9",
     "tzdata": "^1.0.30"
   }
 }
