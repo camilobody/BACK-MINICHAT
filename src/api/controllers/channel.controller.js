@@ -6,8 +6,23 @@ import channelServices from '../services/channel.services.js';
 
 
 async function createChannel(req, res) {
+    const body = req.body;
+    const id_channel = req.body.id_channel;
     try {
-        const addChannel = await channelServices.createChannel();
+        // Buscar si hay el canal esta en la base de datos
+        const getDataChannel = await channelServices.getChannel(id_channel);
+        // Reasignar usuario
+        const assingNewUser = await usersServices.assingUser();
+        // Obtener usuario
+        const getDataUser = await usersServices.getUser(); 
+        // Obtener miembro
+        const getDataMember = await memberServices.getMember();
+        // Agregar usuario bot
+        const addUserBot = await usersServices.createUserBot();
+        // Crear canal
+        const addChannel = await channelServices.createChannel(body);
+        // Agregar reasignar historia
+        const addAssingHistory = await assingHistoryServices.createAssingHistory();
         return res.json({ message: 'The data save with success', data: addChannel });
     } catch (error) {
         console.log(error);
